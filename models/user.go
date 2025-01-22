@@ -19,11 +19,11 @@ type UserStatus struct {
 	IsOnline bool   `json:"isOnline"`
 }
 
-func VerifyPassword(pwd string, hash string) bool {
-	return hash == GeneratePasswordHash(pwd)
+func (u *User) VerifyPassword(pwd string) bool {
+	return u.PwdHash == generatePasswordHash(pwd)
 }
 
-func GeneratePasswordHash(pwd string) string {
+func generatePasswordHash(pwd string) string {
 	h := sha256.New()
 	h.Write([]byte(pwd))
 	return fmt.Sprintf("%x", h.Sum(nil))
