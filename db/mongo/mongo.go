@@ -1,4 +1,4 @@
-package main
+package mongo
 
 import (
 	"context"
@@ -17,6 +17,7 @@ var client *mongo.Client
 var usersCollection *mongo.Collection
 var sessionsCollection *mongo.Collection
 var pebblesCollection *mongo.Collection
+var requestsCollection *mongo.Collection
 var ctx = context.Background()
 
 func Connect() {
@@ -32,7 +33,7 @@ func Connect() {
 	usersCollection = client.Database("pebble").Collection("users")
 	sessionsCollection = client.Database("pebble").Collection("sessions")
 	pebblesCollection = client.Database("pebble").Collection("pebbles")
-
+	requestsCollection = client.Database("pebble").Collection("requests")
 }
 
 func CreateUser(user *models.User) (primitive.ObjectID, error) {
@@ -45,6 +46,8 @@ func CreateUser(user *models.User) (primitive.ObjectID, error) {
 	user.ID = result.InsertedID.(primitive.ObjectID)
 	return result.InsertedID.(primitive.ObjectID), nil
 }
+
+//TODO: REFERENCE OPTMIZATION INSTEAD OF STORING ENTIRE USER IN SESSION
 
 func GetUser(id primitive.ObjectID) (*models.User, error) {
 	var user models.User
