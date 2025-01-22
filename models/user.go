@@ -20,10 +20,7 @@ type UserStatus struct {
 }
 
 func VerifyPassword(pwd string, hash string) bool {
-	if hash == GeneratePasswordHash(pwd) {
-		return true
-	}
-	return false
+	return hash == GeneratePasswordHash(pwd)
 }
 
 func GeneratePasswordHash(pwd string) string {
