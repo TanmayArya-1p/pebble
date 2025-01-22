@@ -1,1 +1,1 @@
-package userreg
+package main

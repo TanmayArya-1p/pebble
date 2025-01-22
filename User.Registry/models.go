@@ -1,4 +1,4 @@
-package userreg
+package main
 
 import (
 	"crypto/sha256"
@@ -6,12 +6,15 @@ import (
 )
 
 type User struct {
-	ID              string `json:"id"`
-	Username        string `json:"username"`
-	ClientSecret    string `json:"clientSecret"`
-	PwdHash         string `json:"pwdHash"`
-	IsOnline        bool   `json:"isOnline"`
-	LastInteraction int    `json:"lastInteraction"`
+	ID           string `json:"id"`
+	Username     string `json:"username"`
+	ClientSecret string `json:"clientSecret"`
+	PwdHash      string `json:"pwdHash"`
+}
+
+type UserStatus struct {
+	ID       string `json:"id"`
+	isOnline bool   `json:"isOnline"`
 }
 
 func VerifyPassword(pwd string, hash string) bool {
@@ -19,7 +22,6 @@ func VerifyPassword(pwd string, hash string) bool {
 		return true
 	}
 	return false
-
 }
 
 func GeneratePasswordHash(pwd string) string {
