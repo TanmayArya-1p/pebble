@@ -52,6 +52,10 @@ func SessionCheck(next http.Handler) http.Handler {
 		}
 		objId := mng.ObjIDfromString(sessionID)
 		ses, err := mng.GetSession(objId)
+		if err != nil {
+			http.Error(w, "Invalid Session", http.StatusUnauthorized)
+			return
+		}
 		sessionObj := *ses
 		ctx := context.WithValue(r.Context(), models.SessionContextKey, sessionObj)
 
