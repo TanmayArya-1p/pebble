@@ -11,13 +11,12 @@ import (
 )
 
 func CreateSession(w http.ResponseWriter, r *http.Request) {
-	uid := r.Header.Get("uid")
-	userID := mng.ObjIDfromString(uid)
-	user, _ := mng.GetUser(userID)
+	user := r.Context().Value("user").(models.User)
+	r.Context().Value("user")
 	newSes := models.Session{
 		Key:      r.FormValue("key"),
 		Pebbles:  []models.Pebble{},
-		Users:    []models.User{*user},
+		Users:    []models.User{user},
 		Requests: []primitive.ObjectID{},
 	}
 	sid, error := mng.CreateSession(&newSes)
@@ -37,15 +36,13 @@ func CreateSession(w http.ResponseWriter, r *http.Request) {
 func JoinSession(w http.ResponseWriter, r *http.Request) {
 	sid := r.FormValue("sid")
 	key := r.FormValue("key")
-	uid := r.Header.Get("uid")
 	sessionID := mng.ObjIDfromString(sid)
-	userID := mng.ObjIDfromString(uid)
 	session, err := mng.GetSession(sessionID)
 	if err != nil {
 		http.Error(w, "Error getting session", http.StatusInternalServerError)
 		return
 	}
-	user, err := mng.GetUser(userID)
+	user := r.Context().Value("user").(models.User)
 	if err != nil {
 		http.Error(w, "Error getting user", http.StatusInternalServerError)
 		return
@@ -60,7 +57,7 @@ func JoinSession(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	session.Users = append(session.Users, *user)
+	session.Users = append(session.Users, user)
 	_, err = mng.UpdateSession(sessionID, *session)
 	if err != nil {
 		http.Error(w, "Error updating session", http.StatusInternalServerError)
@@ -85,13 +82,7 @@ type ResponseSession struct {
 
 func SessionMetadata(w http.ResponseWriter, r *http.Request) {
 
-	sid := r.FormValue("sid")
-	sessionID := mng.ObjIDfromString(sid)
-	session, err := mng.GetSession(sessionID)
-	if err != nil {
-		http.Error(w, "Error getting session", http.StatusInternalServerError)
-		return
-	}
+	session := r.Context().Value("session").(models.Session)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	responseSession := ResponseSession{
@@ -111,29 +102,22 @@ func SessionMetadata(w http.ResponseWriter, r *http.Request) {
 		responseSession.Requests = append(responseSession.Requests, *req)
 	}
 
-	err = json.NewEncoder(w).Encode(responseSession)
+	err := json.NewEncoder(w).Encode(responseSession)
 	if err != nil {
 		fmt.Println("Error encoding response", err)
 	}
 }
 
 func LeaveSession(w http.ResponseWriter, r *http.Request) {
-	sid := r.FormValue("sid")
-	uid := r.Header.Get("uid")
-	sessionID := mng.ObjIDfromString(sid)
-	userID := mng.ObjIDfromString(uid)
-	session, err := mng.GetSession(sessionID)
-	if err != nil {
-		http.Error(w, "Error getting session", http.StatusInternalServerError)
-		return
-	}
-	for i, user := range session.Users {
-		if user.ID == userID {
+	session := r.Context().Value("session").(models.Session)
+	user := r.Context().Value("user").(models.User)
+	for i, us := range session.Users {
+		if us.ID == user.ID {
 			session.Users = append(session.Users[:i], session.Users[i+1:]...)
 			break
 		}
 	}
-	_, err = mng.UpdateSession(sessionID, *session)
+	_, err := mng.UpdateSession(session.ID, session)
 	if err != nil {
 		http.Error(w, "Error updating session", http.StatusInternalServerError)
 		return

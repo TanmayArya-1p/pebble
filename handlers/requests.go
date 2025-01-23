@@ -28,9 +28,9 @@ func CreateRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to append request to db", http.StatusInternalServerError)
 		return
 	}
-	ses, _ := mng.GetSession(mng.ObjIDfromString(sid))
+	ses := r.Context().Value("session").(models.Session)
 	ses.Requests = append(ses.Requests, reqId)
-	res, err := mng.UpdateSession(mng.ObjIDfromString(sid), *ses)
+	res, err := mng.UpdateSession(mng.ObjIDfromString(sid), ses)
 	if err != nil {
 		fmt.Println("Error Updating Session")
 	}
@@ -45,8 +45,7 @@ func GetRequests(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	sid := r.FormValue("sid")
-	ses, _ := mng.GetSession(mng.ObjIDfromString(sid))
+	ses := r.Context().Value("session").(models.Session)
 	var requests []models.Request
 	for _, req := range ses.Requests {
 		request, _ := mng.GetRequest(req)
@@ -69,15 +68,14 @@ func DeleteRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to delete request", http.StatusInternalServerError)
 		return
 	}
-	sid := r.FormValue("sid")
-	ses, _ := mng.GetSession(mng.ObjIDfromString(sid))
+	ses := r.Context().Value("session").(models.Session)
 	for i, req := range ses.Requests {
 		if req == mng.ObjIDfromString(reqId) {
 			ses.Requests = append(ses.Requests[:i], ses.Requests[i+1:]...)
 			break
 		}
 	}
-	_, err = mng.UpdateSession(mng.ObjIDfromString(sid), *ses)
+	_, err = mng.UpdateSession(ses.ID, ses)
 	if err != nil {
 		http.Error(w, "Failed to update session", http.StatusInternalServerError)
 		return

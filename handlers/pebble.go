@@ -12,19 +12,12 @@ func CreatePebble(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	uid := r.Header.Get("uid")
-	userID := mng.ObjIDfromString(uid) //TODO: OPTMIZE SOMEHIOW PASS CONTEX TO FUSER OBJECT FROM MIDDLEWARE
-	user, _ := mng.GetUser(userID)
-	sessionID := r.FormValue("sid")
-	sid := mng.ObjIDfromString(sessionID)
-	session, errG := mng.GetSession(sid)
-	if errG != nil {
-		http.Error(w, "Error getting session", http.StatusInternalServerError)
-		return
-	}
+	user := r.Context().Value("user").(models.User)
+	session := r.Context().Value("session").(models.Session)
+
 	hash := r.FormValue("hash")
 	info := r.FormValue("info")
-	seeds := []models.User{*user}
+	seeds := []models.User{user}
 	newPbl := models.Pebble{
 		Hash:    hash,
 		Info:    info,
@@ -37,7 +30,7 @@ func CreatePebble(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	session.Pebbles = append(session.Pebbles, newPbl)
-	_, errU := mng.UpdateSession(sid, *session)
+	_, errU := mng.UpdateSession(session.ID, session)
 	if errU != nil {
 		http.Error(w, "Error updating session", http.StatusInternalServerError)
 		return
