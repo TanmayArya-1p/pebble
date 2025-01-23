@@ -1,1 +1,44 @@
 package main
+
+import (
+	"fmt"
+	"net/http"
+	"os"
+	auth "pebble/auth"
+	mng "pebble/db/mongo"
+	rd "pebble/db/redis"
+	handlers "pebble/handlers"
+
+	"github.com/joho/godotenv"
+)
+
+func pingHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "pong")
+}
+
+func main() {
+	godotenv.Load()
+	rd.Connect()
+	mng.Connect()
+	http.HandleFunc("/ping", pingHandler)
+	http.HandleFunc("/user/create", handlers.CreateUser)
+	http.HandleFunc("/user/login", handlers.Login)
+
+	http.Handle("/session/create", auth.UserSecretAuth(http.HandlerFunc(handlers.CreateSession)))
+	http.Handle("/session/join", auth.UserSecretAuth(http.HandlerFunc(handlers.JoinSession)))
+	http.Handle("/session", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.SessionMetadata))))
+	http.Handle("/session/leave", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.LeaveSession))))
+
+	http.Handle("/request/create", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.CreateRequest))))
+	http.Handle("/request/get", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.GetRequests))))
+	http.Handle("/request/delete", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.DeleteRequest))))
+
+	http.Handle("/pebble/findSeed", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.FindSeed))))
+	http.Handle("/pebble/create", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.CreatePebble))))
+	http.Handle("/pebble/get", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.GetPebble))))
+
+	fmt.Println("Starting server at port " + os.Getenv("PORT"))
+	if err := http.ListenAndServe(":"+os.Getenv("PORT"), nil); err != nil {
+		fmt.Println("Failed to start server:", err)
+	}
+}

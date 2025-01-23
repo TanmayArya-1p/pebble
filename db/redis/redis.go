@@ -13,6 +13,7 @@ import (
 )
 
 var ctx = context.Background()
+var clt *redis.Client
 
 func Connect() *redis.Client {
 	var client *redis.Client = redis.NewClient(&redis.Options{
@@ -21,11 +22,14 @@ func Connect() *redis.Client {
 		DB:       0,
 		Protocol: 2,
 	})
+	clt = client
 	return client
 }
 
-func AllOnline(client *redis.Client) []models.UserStatus {
+func AllOnline() []models.UserStatus {
+	client := clt
 	keys, err := client.Keys(ctx, "*").Result()
+
 	if err != nil {
 		fmt.Println("Error getting status:", err)
 		return []models.UserStatus{}
@@ -40,7 +44,8 @@ func AllOnline(client *redis.Client) []models.UserStatus {
 	return otpt
 }
 
-func IsOnline(client *redis.Client, user models.User) models.UserStatus {
+func IsOnline(user models.User) models.UserStatus {
+	client := clt
 	uid := user.ID.Hex()
 	_, err := client.Get(ctx, "pebble:"+uid).Result()
 	if err == redis.Nil {
@@ -54,7 +59,8 @@ func IsOnline(client *redis.Client, user models.User) models.UserStatus {
 	}
 }
 
-func SetIsOnline(client *redis.Client, user models.User) error {
+func SetIsOnline(user models.User) error {
+	client := clt
 	uid := user.ID.Hex()
 	td, _ := strconv.Atoi(os.Getenv("USER_ONLINE_FOR"))
 	err := client.Set(ctx, "pebble:"+uid, time.Now().UTC().UnixNano(), time.Duration(td)*time.Second).Err()
