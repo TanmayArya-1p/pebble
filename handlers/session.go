@@ -11,10 +11,13 @@ import (
 )
 
 func CreateSession(w http.ResponseWriter, r *http.Request) {
+	uid := r.Header.Get("uid")
+	userID := mng.ObjIDfromString(uid)
+	user, _ := mng.GetUser(userID)
 	newSes := models.Session{
 		Key:      r.FormValue("key"),
 		Pebbles:  []models.Pebble{},
-		Users:    []models.User{},
+		Users:    []models.User{*user},
 		Requests: []primitive.ObjectID{},
 	}
 	sid, error := mng.CreateSession(&newSes)
@@ -33,6 +36,7 @@ func CreateSession(w http.ResponseWriter, r *http.Request) {
 
 func JoinSession(w http.ResponseWriter, r *http.Request) {
 	sid := r.FormValue("sid")
+	key := r.FormValue("key")
 	uid := r.Header.Get("uid")
 	sessionID := mng.ObjIDfromString(sid)
 	userID := mng.ObjIDfromString(uid)
@@ -45,6 +49,16 @@ func JoinSession(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Error getting user", http.StatusInternalServerError)
 		return
+	}
+	if session.Key != key {
+		http.Error(w, "Invalid key", http.StatusUnauthorized)
+		return
+	}
+	for _, u := range session.Users {
+		if u.ID == user.ID {
+			http.Error(w, "User already in session", http.StatusConflict)
+			return
+		}
 	}
 	session.Users = append(session.Users, *user)
 	_, err = mng.UpdateSession(sessionID, *session)

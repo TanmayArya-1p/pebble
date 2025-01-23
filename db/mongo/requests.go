@@ -8,6 +8,7 @@ import (
 )
 
 func CreateRequest(r *models.Request) (primitive.ObjectID, error) {
+	r.ID = primitive.NewObjectID()
 	res, err := requestsCollection.InsertOne(ctx, r)
 	r.ID = res.InsertedID.(primitive.ObjectID)
 	return r.ID, err

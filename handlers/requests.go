@@ -2,23 +2,27 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	mng "pebble/db/mongo"
 	rd "pebble/db/redis"
 	"pebble/models"
 )
 
-// TODO: SUSSBBY BAKA FUNCTION
+//TODO AUTH DELETE RQST TO ONLY THOSE CONCERNED
+
 func CreateRequest(w http.ResponseWriter, r *http.Request) {
-	var req models.Request
-	decoder := json.NewDecoder(r.Body)
-	sid := r.FormValue("sid")
-	err := decoder.Decode(&req)
-	if err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-
+	var req = models.Request{
+		To:      mng.ObjIDfromString(r.FormValue("to")),
+		From:    mng.ObjIDfromString(r.Header.Get("uid")),
+		Code:    r.FormValue("code"),
+		Content: r.FormValue("content"),
+	}
+	sid := r.FormValue("sid")
 	reqId, err := mng.CreateRequest(&req)
 	if err != nil {
 		http.Error(w, "Failed to append request to db", http.StatusInternalServerError)
@@ -26,13 +30,21 @@ func CreateRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	ses, _ := mng.GetSession(mng.ObjIDfromString(sid))
 	ses.Requests = append(ses.Requests, reqId)
-
+	res, err := mng.UpdateSession(mng.ObjIDfromString(sid), *ses)
+	if err != nil {
+		fmt.Println("Error Updating Session")
+	}
+	fmt.Println(res.ModifiedCount)
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(req)
 
 }
 
 func GetRequests(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	sid := r.FormValue("sid")
 	ses, _ := mng.GetSession(mng.ObjIDfromString(sid))
 	var requests []models.Request
@@ -47,10 +59,27 @@ func GetRequests(w http.ResponseWriter, r *http.Request) {
 // TODO; enforce http methods
 func DeleteRequest(w http.ResponseWriter, r *http.Request) {
 	reqId := r.FormValue("rid")
-	req, _ := mng.GetRequest(mng.ObjIDfromString(reqId))
-	err := mng.DeleteRequest(req)
+	req, err := mng.GetRequest(mng.ObjIDfromString(reqId))
+	if err != nil {
+		http.Error(w, "Failed to get request", http.StatusInternalServerError)
+		return
+	}
+	err = mng.DeleteRequest(req)
 	if err != nil {
 		http.Error(w, "Failed to delete request", http.StatusInternalServerError)
+		return
+	}
+	sid := r.FormValue("sid")
+	ses, _ := mng.GetSession(mng.ObjIDfromString(sid))
+	for i, req := range ses.Requests {
+		if req == mng.ObjIDfromString(reqId) {
+			ses.Requests = append(ses.Requests[:i], ses.Requests[i+1:]...)
+			break
+		}
+	}
+	_, err = mng.UpdateSession(mng.ObjIDfromString(sid), *ses)
+	if err != nil {
+		http.Error(w, "Failed to update session", http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)

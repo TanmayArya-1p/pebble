@@ -26,7 +26,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	res := map[string]string{"ClientSecret": newSecret}
+	res := map[string]string{"ClientSecret": newSecret, "UID": newUser.ID.Hex()}
 	err = json.NewEncoder(w).Encode(res)
 	if err != nil {
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
@@ -34,6 +34,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
+
 	uid := r.FormValue("uid")
 	password := r.FormValue("password")
 	if !auth.LoginVerify(password, uid) {
@@ -46,7 +47,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Error getting client secret", http.StatusInternalServerError)
 	}
-	res := map[string]string{"ClientSecret": secy}
+	res := map[string]string{"ClientSecret": secy, "UID": uid}
 	err = json.NewEncoder(w).Encode(res)
 	if err != nil {
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)

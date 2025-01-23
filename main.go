@@ -13,6 +13,10 @@ import (
 )
 
 func pingHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	fmt.Fprintf(w, "pong")
 }
 
@@ -26,12 +30,12 @@ func main() {
 
 	http.Handle("/session/create", auth.UserSecretAuth(http.HandlerFunc(handlers.CreateSession)))
 	http.Handle("/session/join", auth.UserSecretAuth(http.HandlerFunc(handlers.JoinSession)))
-	http.Handle("/session", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.SessionMetadata))))
 	http.Handle("/session/leave", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.LeaveSession))))
+	http.Handle("/session", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.SessionMetadata))))
 
 	http.Handle("/request/create", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.CreateRequest))))
-	http.Handle("/request/get", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.GetRequests))))
 	http.Handle("/request/delete", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.DeleteRequest))))
+	http.Handle("/request", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.GetRequests))))
 
 	http.Handle("/pebble/findSeed", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.FindSeed))))
 	http.Handle("/pebble/create", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.CreatePebble))))

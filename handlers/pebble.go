@@ -8,6 +8,10 @@ import (
 )
 
 func CreatePebble(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	uid := r.Header.Get("uid")
 	userID := mng.ObjIDfromString(uid) //TODO: OPTMIZE SOMEHIOW PASS CONTEX TO FUSER OBJECT FROM MIDDLEWARE
 	user, _ := mng.GetUser(userID)
@@ -47,6 +51,10 @@ func CreatePebble(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetPebble(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	pebbleID := r.FormValue("pid")
 	sessionID := r.FormValue("sid")
 	sid := mng.ObjIDfromString(sessionID)
@@ -69,6 +77,11 @@ func GetPebble(w http.ResponseWriter, r *http.Request) {
 }
 
 func MakeMeSeed(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "PATCH" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	pebbleID := r.FormValue("pid")
 	sessionID := r.FormValue("sid")
 	sid := mng.ObjIDfromString(sessionID)

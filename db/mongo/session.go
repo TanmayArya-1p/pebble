@@ -33,9 +33,10 @@ func GetSession(id primitive.ObjectID) (*models.Session, error) {
 func UpdateSession(id primitive.ObjectID, updateSession models.Session) (*mongo.UpdateResult, error) {
 	update := bson.M{
 		"$set": bson.M{
-			"key":     updateSession.Key,
-			"pebbles": updateSession.Pebbles,
-			"users":   updateSession.Users,
+			"key":      updateSession.Key,
+			"pebbles":  updateSession.Pebbles,
+			"users":    updateSession.Users,
+			"requests": updateSession.Requests,
 		},
 	}
 	result, err := sessionsCollection.UpdateOne(ctx, bson.M{"_id": id}, update)
@@ -47,6 +48,7 @@ func UpdateSession(id primitive.ObjectID, updateSession models.Session) (*mongo.
 }
 
 func DeleteSession(id primitive.ObjectID) (*mongo.DeleteResult, error) {
+
 	result, err := sessionsCollection.DeleteOne(ctx, bson.M{"_id": id})
 	if err != nil {
 		fmt.Println("Error Deleting Session", err)
