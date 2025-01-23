@@ -11,6 +11,10 @@ import (
 )
 
 func CreateSession(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	user := r.Context().Value(models.UserContextKey).(models.User)
 	newSes := models.Session{
 		Key:      r.FormValue("key"),
@@ -33,7 +37,11 @@ func CreateSession(w http.ResponseWriter, r *http.Request) {
 }
 
 func JoinSession(w http.ResponseWriter, r *http.Request) {
-	sid := r.FormValue("sid")
+	if r.Method != "PUT" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	sid := r.URL.Query().Get("sid")
 	key := r.FormValue("key")
 	sessionID := mng.ObjIDfromString(sid)
 	session, err := mng.GetSession(sessionID)
@@ -80,6 +88,10 @@ type ResponseSession struct {
 }
 
 func SessionMetadata(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	fmt.Println(r.Context().Value(models.SessionContextKey))
 	session := r.Context().Value(models.SessionContextKey).(models.Session)
 
@@ -110,6 +122,10 @@ func SessionMetadata(w http.ResponseWriter, r *http.Request) {
 }
 
 func LeaveSession(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "DELETE" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	session := r.Context().Value(models.SessionContextKey).(models.Session)
 	user := r.Context().Value(models.UserContextKey).(models.User)
 	for i, us := range session.Users {

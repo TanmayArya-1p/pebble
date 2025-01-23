@@ -44,7 +44,8 @@ func UserSecretAuth(next http.Handler) http.Handler {
 
 func SessionCheck(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		sessionID := r.FormValue("sid")
+		sessionID := r.URL.Query().Get("sid")
+
 		if sessionID == "" {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return

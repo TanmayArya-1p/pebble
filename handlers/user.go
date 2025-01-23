@@ -11,6 +11,10 @@ import (
 )
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 	newSecret := uuid.New().String()
@@ -34,7 +38,10 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
-
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	uid := r.FormValue("uid")
 	password := r.FormValue("password")
 	if !auth.LoginVerify(password, uid) {

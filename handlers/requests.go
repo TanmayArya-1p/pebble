@@ -22,7 +22,8 @@ func CreateRequest(w http.ResponseWriter, r *http.Request) {
 		Code:    r.FormValue("code"),
 		Content: r.FormValue("content"),
 	}
-	sid := r.FormValue("sid")
+	sid := r.URL.Query().Get("sid")
+
 	reqId, err := mng.CreateRequest(&req)
 	if err != nil {
 		http.Error(w, "Failed to append request to db", http.StatusInternalServerError)
@@ -41,7 +42,7 @@ func CreateRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetRequests(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
+	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
@@ -57,6 +58,10 @@ func GetRequests(w http.ResponseWriter, r *http.Request) {
 
 // TODO; enforce http methods
 func DeleteRequest(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "DELETE" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	reqId := r.FormValue("rid")
 	req, err := mng.GetRequest(mng.ObjIDfromString(reqId))
 	if err != nil {
@@ -84,7 +89,11 @@ func DeleteRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func FindSeed(w http.ResponseWriter, r *http.Request) {
-	pebID := r.FormValue("pid")
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	pebID := r.URL.Query().Get("pid")
 	idObj := mng.ObjIDfromString(pebID)
 
 	type FindSeedResponse struct {

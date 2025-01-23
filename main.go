@@ -46,3 +46,13 @@ func main() {
 		fmt.Println("Failed to start server:", err)
 	}
 }
+
+type methodHandler map[string]http.Handler
+
+func (h methodHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if handler, ok := h[r.Method]; ok {
+		handler.ServeHTTP(w, r)
+	} else {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+	}
+}

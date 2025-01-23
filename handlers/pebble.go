@@ -44,12 +44,13 @@ func CreatePebble(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetPebble(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
+	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	pebbleID := r.FormValue("pid")
-	sessionID := r.FormValue("sid")
+	pebbleID := r.URL.Query().Get("pid")
+	sessionID := r.URL.Query().Get("sid")
+
 	sid := mng.ObjIDfromString(sessionID)
 	pid := mng.ObjIDfromString(pebbleID)
 	pebble, err := mng.GetPebble(pid)
@@ -76,7 +77,8 @@ func MakeMeSeed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pebbleID := r.FormValue("pid")
-	sessionID := r.FormValue("sid")
+	sessionID := r.URL.Query().Get("sid")
+
 	sid := mng.ObjIDfromString(sessionID)
 	pid := mng.ObjIDfromString(pebbleID)
 	pebble, err := mng.GetPebble(pid)
