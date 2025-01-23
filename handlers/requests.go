@@ -9,8 +9,6 @@ import (
 	"pebble/models"
 )
 
-//TODO AUTH DELETE RQST TO ONLY THOSE CONCERNED
-
 func CreateRequest(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -56,7 +54,6 @@ func GetRequests(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(requests)
 }
 
-// TODO; enforce http methods
 func DeleteRequest(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "DELETE" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -66,6 +63,11 @@ func DeleteRequest(w http.ResponseWriter, r *http.Request) {
 	req, err := mng.GetRequest(mng.ObjIDfromString(reqId))
 	if err != nil {
 		http.Error(w, "Failed to get request", http.StatusInternalServerError)
+		return
+	}
+	usr := r.Context().Value(models.UserContextKey).(models.User)
+	if req.From != usr.ID || req.To != usr.ID {
+		http.Error(w, "You are not concerned with this request", http.StatusUnauthorized)
 		return
 	}
 	err = mng.DeleteRequest(req)
