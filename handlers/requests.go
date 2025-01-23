@@ -89,17 +89,28 @@ func FindSeed(w http.ResponseWriter, r *http.Request) {
 	pebID := r.FormValue("pid")
 	idObj := mng.ObjIDfromString(pebID)
 
+	type FindSeedResponse struct {
+		Found  bool   `json:"found"`
+		SeedID string `json:"seedID"`
+	}
+
 	pebble, _ := mng.GetPebble(idObj)
 	for i := len(pebble.Seeds) - 1; i >= 0; i-- {
 		seed := pebble.Seeds[i]
 		if rd.IsOnline(seed).IsOnline {
-			res := map[string]string{"seedID": seed.ID.Hex()}
+			res := FindSeedResponse{
+				Found:  true,
+				SeedID: seed.ID.Hex(),
+			}
 			w.WriteHeader(http.StatusOK)
 			json.NewEncoder(w).Encode(res)
 			return
 		}
 	}
-	req := map[string]string{"seedID": "NOTFOUND"}
+	req := FindSeedResponse{
+		Found:  false,
+		SeedID: "",
+	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(req)
 }
