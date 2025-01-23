@@ -95,7 +95,6 @@ func SessionMetadata(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(r.Context().Value(models.SessionContextKey))
 	session := r.Context().Value(models.SessionContextKey).(models.Session)
 
-	fmt.Println("COuld Parse")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	responseSession := ResponseSession{

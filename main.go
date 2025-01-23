@@ -28,18 +28,25 @@ func main() {
 	http.HandleFunc("/user/create", handlers.CreateUser)
 	http.HandleFunc("/user/login", handlers.Login)
 
-	http.Handle("/session/create", auth.UserSecretAuth(http.HandlerFunc(handlers.CreateSession)))
 	http.Handle("/session/join", auth.UserSecretAuth(http.HandlerFunc(handlers.JoinSession)))
 	http.Handle("/session/leave", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.LeaveSession))))
-	http.Handle("/session", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.SessionMetadata))))
 
-	http.Handle("/request/create", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.CreateRequest))))
-	http.Handle("/request/delete", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.DeleteRequest))))
-	http.Handle("/request", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.GetRequests))))
+	http.Handle("/session", methodHandler{
+		"POST": auth.UserSecretAuth(http.HandlerFunc(handlers.CreateSession)),
+		"GET":  auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.SessionMetadata))),
+	})
+
+	http.Handle("/request", methodHandler{
+		"POST":   auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.CreateRequest))),
+		"DELETE": auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.DeleteRequest))),
+		"GET":    auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.GetRequests))),
+	})
 
 	http.Handle("/pebble/findSeed", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.FindSeed))))
-	http.Handle("/pebble/create", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.CreatePebble))))
-	http.Handle("/pebble/get", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.GetPebble))))
+	http.Handle("/pebble", methodHandler{
+		"POST": auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.CreatePebble))),
+		"GET":  auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.GetPebble))),
+	})
 
 	fmt.Println("Starting server at port " + os.Getenv("PORT"))
 	if err := http.ListenAndServe(":"+os.Getenv("PORT"), nil); err != nil {
