@@ -20,10 +20,10 @@ type UserStatus struct {
 }
 
 func (u *User) VerifyPassword(pwd string) bool {
-	return u.PwdHash == generatePasswordHash(pwd)
+	return u.PwdHash == GeneratePasswordHash(pwd)
 }
 
-func generatePasswordHash(pwd string) string {
+func GeneratePasswordHash(pwd string) string {
 	h := sha256.New()
 	h.Write([]byte(pwd))
 	return fmt.Sprintf("%x", h.Sum(nil))

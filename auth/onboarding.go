@@ -18,3 +18,13 @@ func LoginVerify(passwd string, uid string) bool {
 	}
 	return true
 }
+
+func GetClientSecret(uid string) (string, error) {
+	objId := mng.ObjIDfromString(uid)
+	user, error := mng.GetUser(objId)
+	if error != nil {
+		fmt.Println("Error getting user with ID", uid)
+		return "", error
+	}
+	return user.ClientSecret, nil
+}

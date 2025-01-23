@@ -40,8 +40,8 @@ func AllOnline(client *redis.Client) []models.UserStatus {
 	return otpt
 }
 
-func IsOnline(client *redis.Client, User models.User) models.UserStatus {
-	uid := User.ID
+func IsOnline(client *redis.Client, user models.User) models.UserStatus {
+	uid := user.ID.Hex()
 	_, err := client.Get(ctx, "pebble:"+uid).Result()
 	if err == redis.Nil {
 		fmt.Println("User ID", uid, "Not Online in DB")
@@ -55,7 +55,7 @@ func IsOnline(client *redis.Client, User models.User) models.UserStatus {
 }
 
 func SetIsOnline(client *redis.Client, user models.User) error {
-	uid := user.ID
+	uid := user.ID.Hex()
 	td, _ := strconv.Atoi(os.Getenv("USER_ONLINE_FOR"))
 	err := client.Set(ctx, "pebble:"+uid, time.Now().UTC().UnixNano(), time.Duration(td)*time.Second).Err()
 	if err != nil {
