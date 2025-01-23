@@ -86,7 +86,7 @@ func DeleteRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func FindSeed(w http.ResponseWriter, r *http.Request) {
-	pebID := r.FormValue("pebbleID")
+	pebID := r.FormValue("pid")
 	idObj := mng.ObjIDfromString(pebID)
 
 	pebble, _ := mng.GetPebble(idObj)
@@ -96,6 +96,7 @@ func FindSeed(w http.ResponseWriter, r *http.Request) {
 			res := map[string]string{"seedID": seed.ID.Hex()}
 			w.WriteHeader(http.StatusOK)
 			json.NewEncoder(w).Encode(res)
+			return
 		}
 	}
 	req := map[string]string{"seedID": "NOTFOUND"}

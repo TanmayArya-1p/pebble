@@ -31,7 +31,7 @@ func CreatePebble(w http.ResponseWriter, r *http.Request) {
 		Seeds:   seeds,
 		Session: session.ID,
 	}
-	pebble, err := mng.CreatePebble(&newPbl)
+	_, err := mng.CreatePebble(&newPbl)
 	if err != nil {
 		http.Error(w, "Error creating pebble", http.StatusInternalServerError)
 		return
@@ -44,7 +44,7 @@ func CreatePebble(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	err = json.NewEncoder(w).Encode(pebble)
+	err = json.NewEncoder(w).Encode(newPbl)
 	if err != nil {
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
 	}
