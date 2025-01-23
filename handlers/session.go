@@ -11,8 +11,7 @@ import (
 )
 
 func CreateSession(w http.ResponseWriter, r *http.Request) {
-	user := r.Context().Value("user").(models.User)
-	r.Context().Value("user")
+	user := r.Context().Value(models.UserContextKey).(models.User)
 	newSes := models.Session{
 		Key:      r.FormValue("key"),
 		Pebbles:  []models.Pebble{},
@@ -42,7 +41,7 @@ func JoinSession(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error getting session", http.StatusInternalServerError)
 		return
 	}
-	user := r.Context().Value("user").(models.User)
+	user := r.Context().Value(models.UserContextKey).(models.User)
 	if err != nil {
 		http.Error(w, "Error getting user", http.StatusInternalServerError)
 		return
@@ -81,8 +80,10 @@ type ResponseSession struct {
 }
 
 func SessionMetadata(w http.ResponseWriter, r *http.Request) {
+	fmt.Println(r.Context().Value(models.SessionContextKey))
+	session := r.Context().Value(models.SessionContextKey).(models.Session)
 
-	session := r.Context().Value("session").(models.Session)
+	fmt.Println("COuld Parse")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	responseSession := ResponseSession{
@@ -109,8 +110,8 @@ func SessionMetadata(w http.ResponseWriter, r *http.Request) {
 }
 
 func LeaveSession(w http.ResponseWriter, r *http.Request) {
-	session := r.Context().Value("session").(models.Session)
-	user := r.Context().Value("user").(models.User)
+	session := r.Context().Value(models.SessionContextKey).(models.Session)
+	user := r.Context().Value(models.UserContextKey).(models.User)
 	for i, us := range session.Users {
 		if us.ID == user.ID {
 			session.Users = append(session.Users[:i], session.Users[i+1:]...)

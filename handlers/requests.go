@@ -28,7 +28,7 @@ func CreateRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to append request to db", http.StatusInternalServerError)
 		return
 	}
-	ses := r.Context().Value("session").(models.Session)
+	ses := r.Context().Value(models.SessionContextKey).(models.Session)
 	ses.Requests = append(ses.Requests, reqId)
 	res, err := mng.UpdateSession(mng.ObjIDfromString(sid), ses)
 	if err != nil {
@@ -45,7 +45,7 @@ func GetRequests(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	ses := r.Context().Value("session").(models.Session)
+	ses := r.Context().Value(models.SessionContextKey).(models.Session)
 	var requests []models.Request
 	for _, req := range ses.Requests {
 		request, _ := mng.GetRequest(req)
@@ -68,7 +68,7 @@ func DeleteRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to delete request", http.StatusInternalServerError)
 		return
 	}
-	ses := r.Context().Value("session").(models.Session)
+	ses := r.Context().Value(models.SessionContextKey).(models.Session)
 	for i, req := range ses.Requests {
 		if req == mng.ObjIDfromString(reqId) {
 			ses.Requests = append(ses.Requests[:i], ses.Requests[i+1:]...)

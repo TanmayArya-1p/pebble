@@ -9,3 +9,8 @@ type Request struct {
 	Code    string             `bson:"code" json:"code"`
 	Content string             `bson:"content" json:"content"`
 }
+
+type contextKey string
+
+const UserContextKey contextKey = "user"
+const SessionContextKey contextKey = "session"

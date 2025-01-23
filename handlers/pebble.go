@@ -12,8 +12,8 @@ func CreatePebble(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	user := r.Context().Value("user").(models.User)
-	session := r.Context().Value("session").(models.Session)
+	user := r.Context().Value(models.UserContextKey).(models.User)
+	session := r.Context().Value(models.SessionContextKey).(models.Session)
 
 	hash := r.FormValue("hash")
 	info := r.FormValue("info")

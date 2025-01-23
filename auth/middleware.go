@@ -37,7 +37,7 @@ func UserSecretAuth(next http.Handler) http.Handler {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
-		ctx := context.WithValue(r.Context(), "user", us)
+		ctx := context.WithValue(r.Context(), models.UserContextKey, us)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -45,18 +45,19 @@ func UserSecretAuth(next http.Handler) http.Handler {
 func SessionCheck(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sessionID := r.FormValue("sid")
-		uid := r.Header.Get("uid")
 		if sessionID == "" {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 		objId := mng.ObjIDfromString(sessionID)
 		ses, err := mng.GetSession(objId)
-		userID := mng.ObjIDfromString(uid)
-		user, _ := mng.GetUser(userID)
+		sessionObj := *ses
+		ctx := context.WithValue(r.Context(), models.SessionContextKey, sessionObj)
+
+		user := r.Context().Value(models.UserContextKey).(models.User)
 		for _, usrs := range ses.Users {
 			if usrs.ID == user.ID {
-				next.ServeHTTP(w, r)
+				next.ServeHTTP(w, r.WithContext(ctx))
 				return
 			}
 		}
@@ -65,7 +66,6 @@ func SessionCheck(next http.Handler) http.Handler {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
-		ctx := context.WithValue(r.Context(), "session", ses)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
