@@ -21,7 +21,6 @@ func CreateUser(user *models.User) (primitive.ObjectID, error) {
 }
 
 // TODO: REFERENCE OPTMIZATION INSTEAD OF STORING ENTIRE USER IN SESSION
-// TODO: POSTMAN TESTING
 func GetUser(id primitive.ObjectID) (*models.User, error) {
 	var user models.User
 	fmt.Println("Searching for user with ID:", id)
