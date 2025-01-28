@@ -94,7 +94,16 @@ func SessionMetadata(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println(r.Context().Value(models.SessionContextKey))
 	session := r.Context().Value(models.SessionContextKey).(models.Session)
-
+	localSDP := r.FormValue("localSDP")
+	usr := r.Context().Value(models.UserContextKey).(models.User)
+	if localSDP != "" {
+		usr.LocalSDP = localSDP
+		_, err := mng.UpdateUser(usr.ID, usr)
+		if err != nil {
+			http.Error(w, "Error updating user", http.StatusInternalServerError)
+			return
+		}
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	responseSession := ResponseSession{
