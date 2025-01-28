@@ -125,7 +125,5 @@ func FindSeed(w http.ResponseWriter, r *http.Request) {
 }
 
 //Request Types:
-//"BEGRTC" - intiialite webrtc tunnel
-// "SRSDP" - setremotesdp
-// "SASDP" - set answer sdp
+// "SETANSSDP" - set answer sdp
 // ""

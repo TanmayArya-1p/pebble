@@ -48,6 +48,8 @@ func main() {
 		"GET":  auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.GetPebble))),
 	})
 
+	http.Handle("/pebble/mms", auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.MakeMeSeed))))
+
 	fmt.Println("Starting server at port " + os.Getenv("PORT"))
 	if err := http.ListenAndServe(":"+os.Getenv("PORT"), nil); err != nil {
 		fmt.Println("Failed to start server:", err)
