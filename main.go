@@ -33,7 +33,7 @@ func main() {
 
 	http.Handle("/session", methodHandler{
 		"POST": auth.UserSecretAuth(http.HandlerFunc(handlers.CreateSession)),
-		"GET":  auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.SessionMetadata))),
+		"PUT":  auth.UserSecretAuth(auth.SessionCheck(http.HandlerFunc(handlers.SessionMetadata))),
 	})
 
 	http.Handle("/request", methodHandler{

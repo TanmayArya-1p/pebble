@@ -88,10 +88,10 @@ type ResponseSession struct {
 }
 
 func SessionMetadata(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
+	// if r.Method != "POST" {
+	// 	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	// 	return
+	// }
 	fmt.Println(r.Context().Value(models.SessionContextKey))
 	session := r.Context().Value(models.SessionContextKey).(models.Session)
 	localSDP := r.FormValue("localSDP")
