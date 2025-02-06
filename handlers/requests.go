@@ -66,7 +66,7 @@ func DeleteRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	usr := r.Context().Value(models.UserContextKey).(models.User)
-	if req.From != usr.ID || req.To != usr.ID {
+	if req.From != usr.ID && req.To != usr.ID {
 		http.Error(w, "You are not concerned with this request", http.StatusUnauthorized)
 		return
 	}
