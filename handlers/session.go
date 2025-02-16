@@ -54,6 +54,9 @@ func JoinSession(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error getting user", http.StatusInternalServerError)
 		return
 	}
+	if user.InSession != "" {
+		http.Error(w, "User already in session1", http.StatusConflict)
+	}
 	if session.Key != key {
 		http.Error(w, "Invalid key", http.StatusUnauthorized)
 		return
@@ -61,12 +64,19 @@ func JoinSession(w http.ResponseWriter, r *http.Request) {
 	for _, u := range session.Users {
 		if u.ID == user.ID {
 			http.Error(w, "User already in session", http.StatusConflict)
+			user.InSession = sid
+			_, err = mng.UpdateUser(user.ID, user)
+			if err != nil {
+				fmt.Println("ERROR UPDATING", err)
+			}
 			return
 		}
 	}
 	session.Users = append(session.Users, user)
-	_, err = mng.UpdateSession(sessionID, *session)
-	if err != nil {
+	_, err1 := mng.UpdateSession(sessionID, *session)
+	user.InSession = sid
+	_, err2 := mng.UpdateUser(user.ID, user)
+	if err1 != nil || err2 != nil {
 		http.Error(w, "Error updating session", http.StatusInternalServerError)
 		return
 	}
@@ -142,14 +152,16 @@ func LeaveSession(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 	}
-	_, err := mng.UpdateSession(session.ID, session)
-	if err != nil {
+	_, err1 := mng.UpdateSession(session.ID, session)
+	user.InSession = ""
+	_, err2 := mng.UpdateUser(user.ID, user)
+	if err1 != nil || err2 != nil {
 		http.Error(w, "Error updating session", http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(session)
+	err := json.NewEncoder(w).Encode(session)
 	if err != nil {
 		fmt.Println("Error encoding response", err)
 	}

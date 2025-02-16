@@ -50,11 +50,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	secy, err := auth.GetClientSecret(uid)
+	secy, inses, err := auth.GetClientSecret(uid)
 	if err != nil {
 		http.Error(w, "Error getting client secret", http.StatusInternalServerError)
 	}
-	res := map[string]string{"ClientSecret": secy, "UID": uid}
+	res := map[string]string{"ClientSecret": secy, "UID": uid, "InSession": inses}
 	err = json.NewEncoder(w).Encode(res)
 	if err != nil {
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)

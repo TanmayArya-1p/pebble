@@ -13,6 +13,7 @@ type User struct {
 	ClientSecret string             `json:"clientSecret"`
 	PwdHash      string             `json:"pwdHash"`
 	LocalSDP     string             `json:"sdp"`
+	InSession    string             `json:"inSession"`
 }
 
 type UserStatus struct {

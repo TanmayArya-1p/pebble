@@ -38,6 +38,7 @@ func UpdateUser(id primitive.ObjectID, updateUser models.User) (*mongo.UpdateRes
 			"clientsecret": updateUser.ClientSecret,
 			"pwdHash":      updateUser.PwdHash,
 			"localsdp":     updateUser.LocalSDP,
+			"insession":    updateUser.InSession,
 		},
 	}
 	result, err := usersCollection.UpdateOne(ctx, bson.M{"_id": id}, update)
