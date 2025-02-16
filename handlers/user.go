@@ -54,7 +54,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Error getting client secret", http.StatusInternalServerError)
 	}
-	res := map[string]string{"ClientSecret": secy, "UID": uid, "InSession": inses}
+	currses := &models.Session{}
+	if inses != "" {
+		currses, _ = mng.GetSession(mng.ObjIDfromString(inses))
+
+	}
+	res := map[string]string{"ClientSecret": secy, "UID": uid, "InSession": inses, "SessionKey": currses.Key}
 	err = json.NewEncoder(w).Encode(res)
 	if err != nil {
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
